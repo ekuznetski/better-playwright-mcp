@@ -28,6 +28,24 @@ const snapshot = typeof rawSnapshot === 'string' ? rawSnapshot : rawSnapshot?.fu
 ### 2. Missing MCP Server
 The original npm package references `dist/mcp-server.js` which doesn't exist. This fork includes a proper MCP wrapper (`index.mjs`).
 
+### 3. MCP SDK API Compatibility
+The MCP SDK (v1.0+) changed from string-based to schema-based request handlers. This fork uses the new API:
+
+```javascript
+// Old API (broken with MCP SDK v1.0+):
+server.setRequestHandler('tools/list', async () => {...});
+server.setRequestHandler('tools/call', async (req) => {...});
+
+// New API (fixed):
+import {
+  ListToolsRequestSchema,
+  CallToolRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
+
+server.setRequestHandler(ListToolsRequestSchema, async () => {...});
+server.setRequestHandler(CallToolRequestSchema, async (req) => {...});
+```
+
 ## Installation
 
 ### Global Installation (Recommended)
@@ -126,13 +144,13 @@ Add to `~/.claude.json`:
 
 ```
 1. create_page(name: "hn", url: "https://news.ycombinator.com")
-   → Returns pageId: "abc-123"
+   -> Returns pageId: "abc-123"
 
 2. get_outline(pageId: "abc-123")
-   → Returns compressed page structure with element refs
+   -> Returns compressed page structure with element refs
 
 3. click(pageId: "abc-123", ref: "e5")
-   → Clicks on element with ref="e5"
+   -> Clicks on element with ref="e5"
 ```
 
 ## Running HTTP Server as Background Service
@@ -192,6 +210,21 @@ systemctl --user start better-playwright
 
 ## Troubleshooting
 
+### MCP not connecting / "Schema is missing a method literal"
+
+If you see this error when Claude Code tries to connect:
+```
+Error: Schema is missing a method literal
+```
+
+This means the MCP SDK API changed. Ensure you have the latest version of this package:
+
+```bash
+npm update -g github:ekuznetski/better-playwright-mcp
+```
+
+The fix uses schema-based handlers instead of string-based ones (see "Fixes Applied" section above).
+
 ### Server not starting
 
 ```bash
@@ -209,6 +242,16 @@ If you see `/bin/sh: .../rg: No such file or directory`:
 ```bash
 cd node_modules/@vscode/ripgrep && npm run postinstall
 ```
+
+### Connection refused
+
+Make sure the HTTP server is running before using the MCP tools:
+
+```bash
+better-playwright-server
+```
+
+The server should output: `Better Playwright HTTP server running on port 3102`
 
 ## License
 
