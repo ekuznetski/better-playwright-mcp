@@ -8,6 +8,10 @@
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+  ListToolsRequestSchema,
+  CallToolRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
 
 const HTTP_SERVER = process.env.BETTER_PLAYWRIGHT_URL || 'http://localhost:3102';
 
@@ -29,7 +33,7 @@ const server = new Server(
   { capabilities: { tools: {} } }
 );
 
-server.setRequestHandler('tools/list', async () => ({
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
     {
       name: 'create_page',
@@ -183,7 +187,7 @@ server.setRequestHandler('tools/list', async () => ({
   ]
 }));
 
-server.setRequestHandler('tools/call', async (req) => {
+server.setRequestHandler(CallToolRequestSchema, async (req) => {
   const { name, arguments: args } = req.params;
 
   try {
