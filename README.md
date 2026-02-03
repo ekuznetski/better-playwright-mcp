@@ -46,6 +46,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {...});
 server.setRequestHandler(CallToolRequestSchema, async (req) => {...});
 ```
 
+## Requirements
+
+- Node.js >= 18.0.0
+- `@modelcontextprotocol/sdk` >= 1.0.0 (included as dependency, installed automatically)
+
 ## Installation
 
 ### Global Installation (Recommended)
@@ -66,6 +71,16 @@ pnpm add github:ekuznetski/better-playwright-mcp
 # yarn
 yarn add github:ekuznetski/better-playwright-mcp
 ```
+
+### Custom Wrapper (Advanced)
+
+If you're creating your own MCP wrapper instead of using the included `index.mjs`, you need to install the MCP SDK separately:
+
+```bash
+npm install @modelcontextprotocol/sdk
+```
+
+Then use the schema-based API (see "Fixes Applied" section for details).
 
 ## Setup
 
