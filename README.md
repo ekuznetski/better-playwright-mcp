@@ -50,8 +50,6 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {...});
 
 - Node.js >= 18.0.0
 
-All dependencies (including `@modelcontextprotocol/sdk`) are installed automatically.
-
 ## Installation
 
 ### Global Installation (Recommended)
