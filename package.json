@@ -1,0 +1,43 @@
+{
+  "name": "better-playwright-mcp",
+  "version": "1.0.0",
+  "description": "Token-efficient Playwright MCP with getOutline and searchSnapshot - saves ~95% tokens vs full snapshots",
+  "type": "module",
+  "main": "index.mjs",
+  "bin": {
+    "better-playwright-mcp": "./index.mjs",
+    "better-playwright-server": "./start-server.mjs"
+  },
+  "scripts": {
+    "start": "node index.mjs",
+    "server": "node start-server.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ekuznetski/better-playwright-mcp.git"
+  },
+  "keywords": [
+    "mcp",
+    "playwright",
+    "browser-automation",
+    "claude",
+    "anthropic",
+    "token-efficient"
+  ],
+  "author": "ekuznetski",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ekuznetski/better-playwright-mcp/issues"
+  },
+  "homepage": "https://github.com/ekuznetski/better-playwright-mcp#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.3",
+    "@vscode/ripgrep": "^1.15.14",
+    "express": "^4.18.2",
+    "playwright": "^1.50.0",
+    "uuid": "^9.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
