@@ -183,6 +183,18 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
         required: ['pageId', 'key']
       }
+    },
+    {
+      name: 'get_console_messages',
+      description: 'Get browser console messages (console.log, console.warn, console.error) and uncaught JS errors. Use after interactions to debug frontend issues. Optionally clear buffer after reading.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          pageId: { type: 'string', description: 'Page ID' },
+          clear: { type: 'boolean', description: 'Clear messages after reading (default: false)' }
+        },
+        required: ['pageId']
+      }
     }
   ]
 }));
@@ -275,6 +287,19 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       case 'press_key':
         await request('POST', `/api/pages/${args.pageId}/press`, { key: args.key });
         return { content: [{ type: 'text', text: `Pressed ${args.key}` }] };
+
+      case 'get_console_messages': {
+        const clearParam = args.clear ? '?clear=true' : '';
+        result = await request('GET', `/api/pages/${args.pageId}/console${clearParam}`);
+        if (result.count === 0) {
+          return { content: [{ type: 'text', text: 'No console messages.' }] };
+        }
+        const formatted = result.messages.map(m => {
+          const time = new Date(m.timestamp).toISOString().slice(11, 23);
+          return `[${time}] [${m.type.toUpperCase()}] ${m.text}`;
+        }).join('\n');
+        return { content: [{ type: 'text', text: `${result.count} message(s):\n\n${formatted}` }] };
+      }
 
       default:
         throw new Error(`Unknown tool: ${name}`);

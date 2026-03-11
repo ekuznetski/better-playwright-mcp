@@ -141,20 +141,64 @@ Add to `~/.claude.json`:
 | `press_key` | Press keyboard key (Enter, Tab, Escape, etc.). |
 | `scroll_to_top` | Scroll to top of page. |
 | `scroll_to_bottom` | Scroll to bottom of page. |
+| `get_console_messages` | Get browser console logs and JS errors. Supports `clear: true` to flush buffer. |
 | `list_pages` | List all open browser pages. |
 | `close_page` | Close browser page. |
 
-## Usage Example
+## Usage Guide for AI Agents
+
+### Recommended workflow
 
 ```
-1. create_page(name: "hn", url: "https://news.ycombinator.com")
+1. create_page(name: "app", url: "http://localhost:3000")
    -> Returns pageId: "abc-123"
 
 2. get_outline(pageId: "abc-123")
-   -> Returns compressed page structure with element refs
+   -> Returns compressed page structure with element refs like [ref=e5]
+   -> Use this to understand layout and find clickable elements
 
-3. click(pageId: "abc-123", ref: "e5")
-   -> Clicks on element with ref="e5"
+3. search_snapshot(pageId: "abc-123", pattern: "Submit|Login")
+   -> Returns only lines matching the pattern — much faster than get_outline for targeted search
+
+4. click(pageId: "abc-123", ref: "e5")
+   -> Clicks element. Always get ref from get_outline or search_snapshot first.
+
+5. get_console_messages(pageId: "abc-123", clear: true)
+   -> Check for JS errors or logs after interaction. Pass clear: true to flush buffer.
+```
+
+### When to use each tool
+
+- **`get_outline`** — first step to understand page structure, max ~200 lines
+- **`search_snapshot`** — when you know what text/element to find, much more token-efficient
+- **`get_console_messages`** — after page load or interactions to catch JS errors, debug logs
+- **`screenshot`** — only when visual layout matters; costs tokens due to image
+- **`press_key`** — for Enter (submit form), Escape (close modal), Tab (focus next field)
+
+### Debugging frontend issues
+
+```
+# After clicking a button or navigating, always check console:
+get_console_messages(pageId: "abc-123")
+
+# Expected output:
+# [12:34:56.123] [LOG] Component mounted
+# [12:34:56.200] [ERROR] Uncaught TypeError: Cannot read property 'id' of undefined
+
+# To avoid accumulating old logs, clear after reading:
+get_console_messages(pageId: "abc-123", clear: true)
+```
+
+### Finding elements
+
+Refs in `get_outline` look like `[ref=e5]`. Use the ref directly in `click`, `type_text`, `hover`.
+
+```
+# Find a specific button:
+search_snapshot(pageId: "abc-123", pattern: "Submit")
+-> button "Submit" [ref=e42]
+
+click(pageId: "abc-123", ref: "e42")
 ```
 
 ## Running HTTP Server as Background Service

@@ -351,6 +351,21 @@ export class PlaywrightServer {
                 res.status(500).json({ error: error.message });
             }
         });
+        // Console messages
+        this.app.get('/api/pages/:pageId/console', (req, res) => {
+            const { pageId } = req.params;
+            const { clear } = req.query;
+            const pageInfo = this.pages.get(pageId);
+            if (!pageInfo) {
+                res.status(404).json({ error: `Page ${pageId} not found` });
+                return;
+            }
+            const messages = [...pageInfo.consoleMessages];
+            if (clear === 'true') {
+                pageInfo.consoleMessages = [];
+            }
+            res.json({ messages, count: messages.length });
+        });
         // Debug: Save raw snapshot to file
         this.app.post('/api/pages/:pageId/save-snapshot', async (req, res) => {
             try {
@@ -393,9 +408,24 @@ export class PlaywrightServer {
             name,
             description,
             page,
-            refMappings: new Map()
+            refMappings: new Map(),
+            consoleMessages: []
         };
         this.pages.set(pageId, pageInfo);
+        page.on('console', msg => {
+            pageInfo.consoleMessages.push({
+                type: msg.type(),
+                text: msg.text(),
+                timestamp: Date.now()
+            });
+        });
+        page.on('pageerror', err => {
+            pageInfo.consoleMessages.push({
+                type: 'error',
+                text: err.message,
+                timestamp: Date.now()
+            });
+        });
         if (url) {
             await page.goto(url);
         }
